@@ -3,6 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#244b3c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Woodshop">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
 <title>Woodshop Manager</title>
 <style>
 :root{--green:#244b3c;--green2:#386b53;--cream:#f5f2e9;--paper:#fffdf8;--ink:#202923;--muted:#69756d;--line:#d8ded5;--red:#a33b32}
@@ -113,6 +119,11 @@ $('#importFile').onchange=async e=>{const file=e.target.files[0];if(!file)return
 function download(name,content,type){const a=document.createElement('a');const u=URL.createObjectURL(new Blob([content],{type}));a.href=u;a.download=name;a.click();URL.revokeObjectURL(u)}
 function render(){if(tab==='inventory')return renderInventory();if(tab==='orders')return renderGeneric('orders','Orders');if(tab==='projects')return renderGeneric('projects','Projects');if(tab==='costs')return renderGeneric('costs','Costs');if(tab==='backup')return renderBackup();$('#app').innerHTML=`<section class="panel"><h2>Shop Dashboard</h2><div class="stats"><div class="stat"><span class="muted">Orders</span><strong>${data.orders.length}</strong></div><div class="stat"><span class="muted">Projects</span><strong>${data.projects.length}</strong></div><div class="stat"><span class="muted">Expenses</span><strong>${money(data.costs.reduce((s,c)=>s+(Number(c.amount)||0),0))}</strong></div><div class="stat"><span class="muted">Inventory items</span><strong>${data.inventory.length}</strong></div><div class="stat"><span class="muted">Orders balance due</span><strong>${money(data.orders.reduce((s,o)=>s+Math.max(0,(Number(o.price)||0)-(Number(o.deposit)||0)),0))}</strong></div></div></section><section class="panel"><h2>Quick Start</h2><p>Use the tabs above to manage orders, projects, expenses, and stock.</p><p class="muted">Tip: Open Backup regularly and download a copy of your records.</p></section>`}
 load();render();
+</script>
+<script>
+if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js').catch(console.warn));
+}
 </script>
 </body>
 </html>
