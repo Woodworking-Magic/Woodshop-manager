@@ -118,7 +118,18 @@ $('#exportCsv').onclick=()=>{const rows=[['Item','Category','Quantity','Unit','L
 $('#importFile').onchange=async e=>{const file=e.target.files[0];if(!file)return;try{const parsed=JSON.parse(await file.text());if(!parsed||!Array.isArray(parsed.orders)||!Array.isArray(parsed.inventory))throw new Error('That file does not look like a Woodshop Manager backup.');if(!confirm('Restore this backup? Current records in this app will be replaced.'))return;data=normalizeRecords({orders:parsed.orders||[],projects:parsed.projects||[],costs:parsed.costs||[],inventory:parsed.inventory||[]});save();alert('Backup restored.');render()}catch(err){alert(err.message||'Could not read that backup file.')}}}
 function download(name,content,type){const a=document.createElement('a');const u=URL.createObjectURL(new Blob([content],{type}));a.href=u;a.download=name;a.click();URL.revokeObjectURL(u)}
 function render(){if(tab==='inventory')return renderInventory();if(tab==='orders')return renderGeneric('orders','Orders');if(tab==='projects')return renderGeneric('projects','Lumber');if(tab==='costs')return renderGeneric('costs','Costs');if(tab==='backup')return renderBackup();$('#app').innerHTML=`<section class="panel"><h2>Shop Dashboard</h2><div class="stats"><div class="stat"><span class="muted">Orders</span><strong>${data.orders.length}</strong></div><div class="stat"><span class="muted">Projects</span><strong>${data.projects.length}</strong></div><div class="stat"><span class="muted">Expenses</span><strong>${money(data.costs.reduce((s,c)=>s+(Number(c.amount)||0),0))}</strong></div><div class="stat"><span class="muted">Inventory items</span><strong>${data.inventory.length}</strong></div><div class="stat"><span class="muted">Orders balance due</span><strong>${money(data.orders.reduce((s,o)=>s+Math.max(0,(Number(o.price)||0)-(Number(o.deposit)||0)),0))}</strong></div></div></section><section class="panel"><h2>Quick Start</h2><p>Use the tabs above to manage orders, projects, expenses, and stock.</p><p class="muted">Tip: Open Backup regularly and download a copy of your records.</p></section>`}
-load();render();
+function addInventoryPresets(){
+ if(data.inventoryPresetsAdded)return;
+ const names=['Deviled Egg Tray','Large Flag','Medium Flag','Small Flag','Pop Top Sign'];
+ names.forEach(name=>{
+   if(!data.inventory.some(item=>String(item.name||'').trim().toLowerCase()===name.toLowerCase())){
+     data.inventory.push({id:id(),name,category:'Finished Product',quantity:0,unit:'Pieces',lowStock:0,location:'',notes:''});
+   }
+ });
+ data.inventoryPresetsAdded=true;
+ save();
+}
+load();addInventoryPresets();render();
 </script>
 <script>
 if ('serviceWorker' in navigator && location.protocol === 'https:') {
